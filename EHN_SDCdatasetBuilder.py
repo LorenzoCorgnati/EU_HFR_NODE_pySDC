@@ -31,6 +31,7 @@ import xarray as xr
 
 def SDCremapvar(remappedVar,remapDict):
     # This function remaps values in the input variable according to the input remap dictionary.
+    # The remapped variable is returned.
     
     # INPUTS:
     #     remappedVar: data array variable to be remapped.
@@ -38,6 +39,7 @@ def SDCremapvar(remappedVar,remapDict):
                
     # OUTPUTS:
     #     Rerr: error flag.
+    #     remappedVar: remapped data array variabled.
     
 
     print('[' + datetime.datetime.now().strftime("%d-%b-%Y %H:%M:%S") + '] - - SDCremapvar started.')
@@ -46,14 +48,14 @@ def SDCremapvar(remappedVar,remapDict):
     Rerr = False
     
     for k,v in remapDict.items():
-        remappedVar[remappedVar==k] = v
+        remappedVar = remappedVar.where(remappedVar!=k, v)
         
     if(not Rerr):
         print('[' + datetime.datetime.now().strftime("%d-%b-%Y %H:%M:%S") + '] - - SDCremapvar successfully executed for variable ' + remappedVar.name + '.')
     else:
         print('[' + datetime.datetime.now().strftime("%d-%b-%Y %H:%M:%S") + '] - - SDCremapvar exited with an error for variable ' + remappedVar.name + '.')
         
-    return Rerr
+    return Rerr, remappedVar
 
 def SDCaggregationTimeInterval():
     # This function evaluates the start and end datetimes for aggregation based on the selected time span.
@@ -165,31 +167,28 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     
     # Remap and rename QC variables to the SDC schema
     # TIME_SEADATANET_QC
-    Rerr = SDCremapvar(sdcDS.TIME_QC, QCremapDict)
-    sdcDS['TIME_SEADATANET_QC'] = sdcDS['TIME_QC']
+    Rerr, sdcDS['TIME_SEADATANET_QC'] = SDCremapvar(sdcDS.TIME_QC, QCremapDict)
     sdcDS = sdcDS.drop(['TIME_QC'])    
     # POSITION_SEADATANET_QC
-    Rerr = SDCremapvar(sdcDS.POSITION_SEADATANET_QC, QCremapDict)
-    sdcDS['POSITION_SEADATANET_QC'] = sdcDS['POSITION_QC']
+    Rerr, sdcDS['POSITION_SEADATANET_QC'] = SDCremapvar(sdcDS.POSITION_QC, QCremapDict)
     sdcDS = sdcDS.drop(['POSITION_QC'])
     # DEPTH_SEADATANET_QC
-    Rerr = SDCremapvar(sdcDS.DEPTH_SEADATANET_QC, QCremapDict)
-    sdcDS['DEPTH_SEADATANET_QC'] = sdcDS['DEPTH_QC']
-    sdcDS = sdcDS.drop(['DEPTH_QC'])    
+    Rerr, sdcDS['DEPTH_SEADATANET_QC'] = SDCremapvar(sdcDS.DEPH_QC, QCremapDict)
+    sdcDS = sdcDS.drop(['DEPH_QC'])    
     # QCflag
-    Rerr = SDCremapvar(sdcDS.QCflag, QCremapDict)    
+    Rerr, sdcDS['QCflag'] = SDCremapvar(sdcDS.QCflag, QCremapDict)    
     # OWTR_QC
-    Rerr = SDCremapvar(sdcDS.OWTR_QC, QCremapDict)    
+    Rerr, sdcDS['OWTR_QC'] = SDCremapvar(sdcDS.OWTR_QC, QCremapDict)    
     # MDFL_QC
-    Rerr = SDCremapvar(sdcDS.MDFL_QC, QCremapDict)    
+    Rerr, sdcDS['MDFL_QC'] = SDCremapvar(sdcDS.MDFL_QC, QCremapDict)    
     # VART_QC
-    Rerr = SDCremapvar(sdcDS.VART_QC, QCremapDict)
+    Rerr, sdcDS['VART_QC'] = SDCremapvar(sdcDS.VART_QC, QCremapDict)
     # CSPD_QC
-    Rerr = SDCremapvar(sdcDS.CSPD_QC, QCremapDict)
+    Rerr, sdcDS['CSPD_QC'] = SDCremapvar(sdcDS.CSPD_QC, QCremapDict)
     # AVRB_QC
-    Rerr = SDCremapvar(sdcDS.AVRB_QC, QCremapDict)
+    Rerr, sdcDS['AVRB_QC'] = SDCremapvar(sdcDS.AVRB_QC, QCremapDict)
     # RDCT_QC
-    Rerr = SDCremapvar(sdcDS.RDCT_QC, QCremapDict)
+    Rerr, sdcDS['RDCT_QC'] = SDCremapvar(sdcDS.RDCT_QC, QCremapDict)
     
     
     
