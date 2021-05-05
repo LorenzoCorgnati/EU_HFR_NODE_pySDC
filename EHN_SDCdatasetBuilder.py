@@ -60,7 +60,7 @@ def SDCremapvar(remappedVar,remapDict):
 def SDCaggregationTimeInterval():
     # This function evaluates the start and end datetimes for aggregation based on the selected time span.
     # In particular, this function selects the last n months before the current one, where n is the selected
-    # time span.
+    # time span. The function also returns the aggregation time extent string for the dataset ID.
     
     # INPUTS:
                
@@ -68,6 +68,7 @@ def SDCaggregationTimeInterval():
     #     Rerr: error flag.
     #     tStart: starting time of the dataset.
     #     tEnd: ending time of the dataset.
+    #     timeExtent: time extent string for the dataset ID.
     
 
     print('[' + datetime.datetime.now().strftime("%d-%b-%Y %H:%M:%S") + '] - - SDCaggregationTimeInterval started.')
@@ -79,12 +80,22 @@ def SDCaggregationTimeInterval():
     tEnd = datetime.datetime.today().replace(day=1, hour=23, minute=59, second =59, microsecond=999999) - datetime.timedelta(hours=24)
     tStart = (tEnd - relativedelta(months=timeSpan-1)).replace(day=1, hour=0, minute=0, second =0, microsecond=0)
     
+    # Build the aggregation time extent string
+    if timeSpan == 1:               # 1-month time extent
+        timeExtent = str(tStart.year) + str(tStart.month).zfill(2)    
+    elif timeSpan == 12:            # 1-year time extent
+        timeExtent = str(tStart.year)
+    elif ((timeSpan % 12) == 0):    # multi-years time extent
+        timeExtent = str(tStart.year) + '-' + str(tEnd.year)
+    else:                           # general time extent
+        timeExtent = str(tStart.year) + str(tStart.month).zfill(2) + '-' + str(tEnd.year) + str(tEnd.month).zfill(2)
+    
     if(not Rerr):
         print('[' + datetime.datetime.now().strftime("%d-%b-%Y %H:%M:%S") + '] - - SDCaggregationTimeInterval successfully executed.')
     else:
         print('[' + datetime.datetime.now().strftime("%d-%b-%Y %H:%M:%S") + '] - - SDCaggregationTimeInterval exited with an error.')
         
-    return Rerr, tStart, tEnd
+    return Rerr, tStart, tEnd, timeExtent
 
 
 #####################################
@@ -134,6 +145,9 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     scaleFactor = 0.001;
     addOffset = 0;
     
+    # Set the aggregation time interval according to the aggregation time span
+    Rerr, tStart, tEnd, timeExtent = SDCaggregationTimeInterval()
+    
     # Retrieve current station_id
     stationID = curStation['station_id'].to_list()[0]    
     
@@ -144,8 +158,8 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     siteCode = networkID
     platformCode = networkID + '-' + stationID
     
-    # Set the aggregation time interval according to the aggregation time span
-    Rerr, tStart, tEnd = SDCaggregationTimeInterval()
+    # Build data ID for SDN_LOCAL_CDI_ID variable
+    dataID = 'RV_' + platformCode + '_' + timeExtent
     
     # Retrieve the SDC_OpenDAP_data_url for current station data
     OpenDAPdataUrl = curStation['SDC_OpenDAP_data_url'].to_list()[0]
@@ -190,6 +204,84 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     # RDCT_QC
     Rerr, sdcDS['RDCT_QC'] = SDCremapvar(sdcDS.RDCT_QC, QCremapDict)
     
+    # Modify variable attributes according to the SDC schema
+    # TIME
+    sdcDS.TIME.attrs['long_name'] = 'Chronological Julian Date'
+    sdcDS.TIME.attrs['calendar'] = 'julian'
+    sdcDS.TIME.attrs['ancillary_variables'] = 'TIME_SEADATANET_QC'
+    sdcDS.TIME.attrs.pop('valid_min')
+    sdcDS.TIME.attrs.pop('valid_max')
+    sdcDS.TIME.attrs.pop('uncertainty')
+    
+    if 'codar'.casefold() in sensor.casefold():
+        # BEAR
+        sdcDS.BEAR.attrs['units'] = 'degrees_true'
+        sdcDS.BEAR.attrs['ancillary_variables'] = 'POSITION_SEADATANET_QC'
+        sdcDS.BEAR.attrs.pop('standard_name')
+        sdcDS.BEAR.attrs.pop('valid_min')
+        sdcDS.BEAR.attrs.pop('valid_max')
+        sdcDS.BEAR.attrs.pop('uncertainty')
+        
+        # RNGE
+        sdcDS.RNGE.attrs['units'] = 'km'
+        sdcDS.RNGE.attrs['ancillary_variables'] = 'POSITION_SEADATANET_QC'
+        sdcDS.RNGE.attrs.pop('standard_name')
+        sdcDS.RNGE.attrs.pop('valid_min')
+        sdcDS.RNGE.attrs.pop('valid_max')
+        sdcDS.RNGE.attrs.pop('uncertainty')
+    
+    # DEPTH
+    sdcDS = sdcDS.rename({'DEPH': 'DEPTH'})
+    sdcDS.DEPTH.attrs.pop('valid_min')
+    sdcDS.DEPTH.attrs.pop('valid_max')
+    sdcDS.DEPTH.attrs.pop('uncertainty')
+    sdcDS.DEPTH.attrs.pop('data_mode')
+    
+    # LATITUDE
+    sdcDS.LATITUDE.attrs['long_name'] = 'Latitude'
+    sdcDS.LATITUDE.attrs['units'] = 'degrees_north'
+    sdcDS.LATITUDE.attrs['ancillary_variables'] = 'POSITION_SEADATANET_QC'
+    sdcDS.LATITUDE.attrs['valid_range'] = np.array([-90, 90])
+    sdcDS.LATITUDE.attrs.pop('valid_min')
+    sdcDS.LATITUDE.attrs.pop('valid_max')
+    sdcDS.LATITUDE.attrs.pop('uncertainty')
+    
+    # LONGITUDE
+    sdcDS.LONGITUDE.attrs['long_name'] = 'Longitude'
+    sdcDS.LONGITUDE.attrs['units'] = 'degrees_east'
+    sdcDS.LONGITUDE.attrs['ancillary_variables'] = 'POSITION_SEADATANET_QC'
+    sdcDS.LONGITUDE.attrs['valid_range'] = np.array([-180, 180])
+    sdcDS.LONGITUDE.attrs.pop('valid_min')
+    sdcDS.LONGITUDE.attrs.pop('valid_max')
+    sdcDS.LONGITUDE.attrs.pop('uncertainty')
+    
+    # SDN_CRUISE
+    sdcDS = sdcDS.drop(['SDN_CRUISE'])
+    sdcDS = sdcDS.assign(SDN_CRUISE=siteCode)
+    sdcDS.SDN_CRUISE.attrs['long_name'] = 'Grid grouping label'
+    
+    # SDN_STATION
+    sdcDS = sdcDS.drop(['SDN_STATION'])
+    sdcDS = sdcDS.assign(SDN_STATION=platformCode)
+    sdcDS.SDN_STATION.attrs['long_name'] = 'Grid label'
+    
+    # SDN_LOCAL_CDI_ID
+    sdcDS = sdcDS.drop(['SDN_LOCAL_CDI_ID'])
+    sdcDS = sdcDS.assign(SDN_LOCAL_CDI_ID=dataID)
+    sdcDS.SDN_LOCAL_CDI_ID.attrs['long_name'] = 'SeaDataNet CDI identifier'
+    
+    # SDN_EDMO_CODE
+    sdcDS = sdcDS.drop(['SDN_EDMO_CODE'])
+    sdcDS = sdcDS.assign(SDN_EDMO_CODE=EDMOcode)
+    sdcDS = sdcDS.SDN_EDMO_CODE.expand_dims('MAXINST')
+    sdcDS.SDN_EDMO_CODE.attrs['long_name'] = 'European Directory of Marine Organisations code for the CDI partner'
+    sdcDS.SDN_EDMO_CODE.attrs['units'] = 1
+    
+    # SDN_XLINK
+    sdcDS = sdcDS.drop(['SDN_XLINK'])
+    sdcDS = sdcDS.assign(SDN_XLINK=EDMOcode)
+    sdcDS = sdcDS.SDN_XLINK.expand_dims('REFMAX')
+    sdcDS.SDN_XLINK.attrs['long_name'] = 'External resource linkages'
     
     
     
@@ -276,7 +368,7 @@ if __name__ == '__main__':
     }
     
     # Set the temporal aggregation interval for the dataset to be built
-    timeSpan = 1    # number of months
+    timeSpan = 1        # number of months
     
     # Set the dictionaty for mapping QC variables towards SDC schema
     QCremapDict = {0: 48, 1: 49, 2: 50, 3: 51, 4: 52, 8: 56}
