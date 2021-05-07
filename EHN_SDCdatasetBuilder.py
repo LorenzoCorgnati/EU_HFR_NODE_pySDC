@@ -133,18 +133,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     
     # Initialize error flag
     Rerr = False
-    
-    # Set the output variables in case of function exit due to absence of data
-    ncFileNoPath = []
-    ncFilesize = 0
-    tStart = 0
-    tEnd = 0
-    dataID = []
-    
-    # Set scale_factor and add_offset values
-    scaleFactor = 0.001;
-    addOffset = 0;
-    
+      
     # Set the aggregation time interval according to the aggregation time span
     Rerr, tStart, tEnd, timeExtent = SDCaggregationTimeInterval()
     
@@ -172,16 +161,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     
     # Retrieve manufacturer info
     sensor = sdcDS.attrs['sensor']   
-    
-    # Set non physical dimensions
-    maxSite_dim = 1
-    maxInst_dim = 1
-    refMax_dim = 1
-    string20_dim = 20
-    string50_dim = 50
-    string80_dim = 80
-    string250_dim = 250
-    
+   
     # Remap and rename QC variables to the SDC schema
     # TIME_SEADATANET_QC
     Rerr, sdcDS['TIME_SEADATANET_QC'] = SDCremapvar(sdcDS.TIME_QC, QCremapDict)
@@ -210,7 +190,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     # Modify variable attributes according to the SDC schema
     # TIME
     sdcDS.TIME.attrs['long_name'] = 'Chronological Julian Date'
-    sdcDS.TIME.attrs['calendar'] = 'julian'
+    sdcDS.TIME.encoding['calendar'] = 'julian'
     sdcDS.TIME.attrs['ancillary_variables'] = 'TIME_SEADATANET_QC'
     sdcDS.TIME.attrs.pop('valid_min')
     sdcDS.TIME.attrs.pop('valid_max')
@@ -275,7 +255,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     
     # SDN_EDMO_CODE
     sdcDS = sdcDS.drop(['SDN_EDMO_CODE'])
-    sdcDS = sdcDS.assign(SDN_EDMO_CODE=EDMOcode)
+    sdcDS = sdcDS.assign(SDN_EDMO_CODE=np.int16(EDMOcode))
     sdcDS['SDN_EDMO_CODE'] = sdcDS.SDN_EDMO_CODE.expand_dims('MAXINST')
     sdcDS.SDN_EDMO_CODE.attrs['long_name'] = 'European Directory of Marine Organisations code for the CDI partner'
     sdcDS.SDN_EDMO_CODE.attrs['units'] = 1
@@ -295,14 +275,14 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     sdcDS.RDVA.attrs.pop('valid_min')
     sdcDS.RDVA.attrs.pop('valid_max')  
     sdcDS.RDVA.attrs.pop('data_mode') 
-    sdcDS.RDVA.attrs['coordinates'] = sdcDS.RDVA.attrs['coordinates'].replace('DEPH','DEPTH')
+    sdcDS.RDVA.encoding['coordinates'] = sdcDS.RDVA.encoding['coordinates'].replace('DEPH','DEPTH')
     sdcDS.RDVA.attrs['ancillary_variables'] = sdcDS.RDVA.attrs['ancillary_variables'].replace(',','')
     
     # DRVA
     sdcDS.DRVA.attrs['long_name'] = 'Direction of Radial Vector Away From Instrument'    
     sdcDS.DRVA.attrs['valid_range'] = np.array([0, 360000])
     sdcDS.DRVA.attrs['units'] = 'degrees_true'
-    sdcDS.DRVA.attrs['coordinates'] = sdcDS.DRVA.attrs['coordinates'].replace('DEPH','DEPTH')
+    sdcDS.DRVA.encoding['coordinates'] = sdcDS.DRVA.encoding['coordinates'].replace('DEPH','DEPTH')
     sdcDS.DRVA.attrs.pop('valid_min')
     sdcDS.DRVA.attrs.pop('valid_max')  
     sdcDS.DRVA.attrs.pop('data_mode')
@@ -315,7 +295,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     sdcDS.EWCT.attrs.pop('valid_min')
     sdcDS.EWCT.attrs.pop('valid_max')
     sdcDS.EWCT.attrs.pop('data_mode')
-    sdcDS.EWCT.attrs['coordinates'] = sdcDS.EWCT.attrs['coordinates'].replace('DEPH','DEPTH')
+    sdcDS.EWCT.encoding['coordinates'] = sdcDS.EWCT.encoding['coordinates'].replace('DEPH','DEPTH')
     sdcDS.EWCT.attrs['ancillary_variables'] = sdcDS.EWCT.attrs['ancillary_variables'].replace(',','')
     
     # NSCT
@@ -325,7 +305,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     sdcDS.NSCT.attrs.pop('valid_min')
     sdcDS.NSCT.attrs.pop('valid_max')
     sdcDS.NSCT.attrs.pop('data_mode')
-    sdcDS.NSCT.attrs['coordinates'] = sdcDS.NSCT.attrs['coordinates'].replace('DEPH','DEPTH')
+    sdcDS.NSCT.encoding['coordinates'] = sdcDS.NSCT.encoding['coordinates'].replace('DEPH','DEPTH')
     sdcDS.NSCT.attrs['ancillary_variables'] = sdcDS.NSCT.attrs['ancillary_variables'].replace(',','')
     
     if 'wera'.casefold() in sensor.casefold():
@@ -338,7 +318,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
         sdcDS.HCSS.attrs.pop('data_mode')
         sdcDS.HCSS.attrs['sdn_parameter_name'] = ''
         sdcDS.HCSS.attrs['sdn_parameter_urn'] = ''
-        sdcDS.HCSS.attrs['coordinates'] = sdcDS.HCSS.attrs['coordinates'].replace('DEPH','DEPTH')
+        sdcDS.HCSS.encoding['coordinates'] = sdcDS.HCSS.encoding['coordinates'].replace('DEPH','DEPTH')
         sdcDS.HCSS.attrs['ancillary_variables'] = sdcDS.HCSS.attrs['ancillary_variables'].replace(',','')
         
         # EACC
@@ -350,7 +330,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
         sdcDS.EACC.attrs.pop('data_mode')
         sdcDS.EACC.attrs['sdn_parameter_name'] = ''
         sdcDS.EACC.attrs['sdn_parameter_urn'] = ''
-        sdcDS.EACC.attrs['coordinates'] = sdcDS.EACC.attrs['coordinates'].replace('DEPH','DEPTH')
+        sdcDS.EACC.encoding['coordinates'] = sdcDS.EACC.encoding['coordinates'].replace('DEPH','DEPTH')
         sdcDS.EACC.attrs['ancillary_variables'] = sdcDS.EACC.attrs['ancillary_variables'].replace(',','')
         
     if 'codar'.casefold() in sensor.casefold():
@@ -363,7 +343,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
         sdcDS.ESPC.attrs.pop('data_mode')
         sdcDS.ESPC.attrs['sdn_parameter_name'] = ''
         sdcDS.ESPC.attrs['sdn_parameter_urn'] = ''
-        sdcDS.ESPC.attrs['coordinates'] = sdcDS.ESPC.attrs['coordinates'].replace('DEPH','DEPTH')
+        sdcDS.ESPC.encoding['coordinates'] = sdcDS.ESPC.encoding['coordinates'].replace('DEPH','DEPTH')
         sdcDS.ESPC.attrs['ancillary_variables'] = sdcDS.ESPC.attrs['ancillary_variables'].replace(',','')
         
         # ETMP
@@ -375,7 +355,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
         sdcDS.ETMP.attrs.pop('data_mode')
         sdcDS.ETMP.attrs['sdn_parameter_name'] = ''
         sdcDS.ETMP.attrs['sdn_parameter_urn'] = ''
-        sdcDS.ETMP.attrs['coordinates'] = sdcDS.ETMP.attrs['coordinates'].replace('DEPH','DEPTH')
+        sdcDS.ETMP.encoding['coordinates'] = sdcDS.ETMP.encoding['coordinates'].replace('DEPH','DEPTH')
         sdcDS.ETMP.attrs['ancillary_variables'] = sdcDS.ETMP.attrs['ancillary_variables'].replace(',','')
         
         # MAXV
@@ -385,7 +365,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
         sdcDS.MAXV.attrs.pop('valid_min')
         sdcDS.MAXV.attrs.pop('valid_max')
         sdcDS.MAXV.attrs.pop('data_mode')
-        sdcDS.MAXV.attrs['coordinates'] = sdcDS.MAXV.attrs['coordinates'].replace('DEPH','DEPTH')
+        sdcDS.MAXV.encoding['coordinates'] = sdcDS.MAXV.encoding['coordinates'].replace('DEPH','DEPTH')
         sdcDS.MAXV.attrs['ancillary_variables'] = sdcDS.MAXV.attrs['ancillary_variables'].replace(',','')
         
         # MINV
@@ -395,7 +375,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
         sdcDS.MINV.attrs.pop('valid_min')
         sdcDS.MINV.attrs.pop('valid_max')
         sdcDS.MINV.attrs.pop('data_mode')
-        sdcDS.MINV.attrs['coordinates'] = sdcDS.MINV.attrs['coordinates'].replace('DEPH','DEPTH')
+        sdcDS.MINV.encoding['coordinates'] = sdcDS.MINV.encoding['coordinates'].replace('DEPH','DEPTH')
         sdcDS.MINV.attrs['ancillary_variables'] = sdcDS.MINV.attrs['ancillary_variables'].replace(',','')
         
         # ERSC
@@ -407,7 +387,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
         sdcDS.ERSC.attrs.pop('data_mode')
         sdcDS.ERSC.attrs['sdn_parameter_name'] = ''
         sdcDS.ERSC.attrs['sdn_parameter_urn'] = ''
-        sdcDS.ERSC.attrs['coordinates'] = sdcDS.ERSC.attrs['coordinates'].replace('DEPH','DEPTH')
+        sdcDS.ERSC.encoding['coordinates'] = sdcDS.ERSC.encoding['coordinates'].replace('DEPH','DEPTH')
         sdcDS.ERSC.attrs['ancillary_variables'] = sdcDS.ERSC.attrs['ancillary_variables'].replace(',','')
         
         # ERTC
@@ -419,7 +399,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
         sdcDS.ERTC.attrs.pop('data_mode')
         sdcDS.ERTC.attrs['sdn_parameter_name'] = ''
         sdcDS.ERTC.attrs['sdn_parameter_urn'] = ''
-        sdcDS.ERTC.attrs['coordinates'] = sdcDS.ERTC.attrs['coordinates'].replace('DEPH','DEPTH')
+        sdcDS.ERTC.encoding['coordinates'] = sdcDS.ERTC.encoding['coordinates'].replace('DEPH','DEPTH')
         sdcDS.ERTC.attrs['ancillary_variables'] = sdcDS.ERTC.attrs['ancillary_variables'].replace(',','')
         
         # XDST
@@ -431,7 +411,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
         sdcDS.XDST.attrs.pop('data_mode')
         sdcDS.XDST.attrs['sdn_parameter_name'] = ''
         sdcDS.XDST.attrs['sdn_parameter_urn'] = ''
-        sdcDS.XDST.attrs['coordinates'] = sdcDS.XDST.attrs['coordinates'].replace('DEPH','DEPTH')
+        sdcDS.XDST.encoding['coordinates'] = sdcDS.XDST.encoding['coordinates'].replace('DEPH','DEPTH')
         sdcDS.XDST.attrs['ancillary_variables'] = sdcDS.XDST.attrs['ancillary_variables'].replace(',','')
         
         # YDST
@@ -443,7 +423,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
         sdcDS.YDST.attrs.pop('data_mode')
         sdcDS.YDST.attrs['sdn_parameter_name'] = ''
         sdcDS.YDST.attrs['sdn_parameter_urn'] = ''
-        sdcDS.YDST.attrs['coordinates'] = sdcDS.YDST.attrs['coordinates'].replace('DEPH','DEPTH')
+        sdcDS.YDST.encoding['coordinates'] = sdcDS.YDST.encoding['coordinates'].replace('DEPH','DEPTH')
         sdcDS.YDST.attrs['ancillary_variables'] = sdcDS.YDST.attrs['ancillary_variables'].replace(',','')
         
         # SPRC
@@ -455,7 +435,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
         sdcDS.SPRC.attrs.pop('data_mode')
         sdcDS.SPRC.attrs['sdn_parameter_name'] = ''
         sdcDS.SPRC.attrs['sdn_parameter_urn'] = ''
-        sdcDS.SPRC.attrs['coordinates'] = sdcDS.SPRC.attrs['coordinates'].replace('DEPH','DEPTH')
+        sdcDS.SPRC.encoding['coordinates'] = sdcDS.SPRC.encoding['coordinates'].replace('DEPH','DEPTH')
         sdcDS.SPRC.attrs['ancillary_variables'] = sdcDS.SPRC.attrs['ancillary_variables'].replace(',','')
         
     # NARX
@@ -516,6 +496,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     sdcDS.SCDR.attrs.pop('data_mode')
     sdcDS.SCDR.attrs['sdn_parameter_name'] = ''
     sdcDS.SCDR.attrs['sdn_parameter_urn'] = ''
+    sdcDS.SCDR.encoding['_FillValue']= b''
     
     # SCDT
     sdcDS.SCDT.attrs['long_name'] = 'Transmit Antenna Codes'
@@ -523,128 +504,151 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     sdcDS.SCDT.attrs.pop('data_mode')
     sdcDS.SCDT.attrs['sdn_parameter_name'] = ''
     sdcDS.SCDT.attrs['sdn_parameter_urn'] = ''
+    sdcDS.SCDT.encoding['_FillValue']= b''
     
     # TIME_SEADATANET_QC
     sdcDS.TIME_SEADATANET_QC.attrs['long_name'] = 'Time SeaDataNet Quality Flag'
     sdcDS.TIME_SEADATANET_QC.attrs.pop('conventions')
     sdcDS.TIME_SEADATANET_QC.attrs['Conventions'] = 'SeaDataNet measurand qualifier flags'
-    sdcDS.TIME_SEADATANET_QC.attrs['valid_range'] = np.array([48, 65])        
+    sdcDS.TIME_SEADATANET_QC.attrs['valid_range'] = np.array([48, 65]).astype(np.int8)      
     sdcDS.TIME_SEADATANET_QC.attrs.pop('valid_min')
     sdcDS.TIME_SEADATANET_QC.attrs.pop('valid_max')
     sdcDS.TIME_SEADATANET_QC.attrs.pop('comment')
-    sdcDS.TIME_SEADATANET_QC.attrs['flag_values'] = np.array([48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65])
+    sdcDS.TIME_SEADATANET_QC.attrs['flag_values'] = np.array([48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65]).astype(np.int8) 
     sdcDS.TIME_SEADATANET_QC.attrs['flag_meanings'] = 'no_quality_control good_value probably_good_value probably_bad_value bad_value changed_value value_below_detection value_in_excess interpolated_value missing_value value_phenomenon_uncertain'
     sdcDS.TIME_SEADATANET_QC.attrs['sdn_conventions_urn'] = 'SDN:L20::'
+    sdcDS.TIME_SEADATANET_QC.encoding['_FillValue']= np.int8(57)
     
     # POSITION_SEADATANET_QC
     sdcDS.POSITION_SEADATANET_QC.attrs['long_name'] = 'Position SeaDataNet Quality Flag'
     sdcDS.POSITION_SEADATANET_QC.attrs.pop('conventions')
     sdcDS.POSITION_SEADATANET_QC.attrs['Conventions'] = 'SeaDataNet measurand qualifier flags'
-    sdcDS.POSITION_SEADATANET_QC.attrs['valid_range'] = np.array([48, 65])        
+    sdcDS.POSITION_SEADATANET_QC.attrs['valid_range'] = np.array([48, 65]).astype(np.int8)       
     sdcDS.POSITION_SEADATANET_QC.attrs.pop('valid_min')
     sdcDS.POSITION_SEADATANET_QC.attrs.pop('valid_max')
     sdcDS.POSITION_SEADATANET_QC.attrs.pop('comment')
-    sdcDS.POSITION_SEADATANET_QC.attrs['flag_values'] = np.array([48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65])
+    sdcDS.POSITION_SEADATANET_QC.attrs['flag_values'] = np.array([48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65]).astype(np.int8) 
     sdcDS.POSITION_SEADATANET_QC.attrs['flag_meanings'] = 'no_quality_control good_value probably_good_value probably_bad_value bad_value changed_value value_below_detection value_in_excess interpolated_value missing_value value_phenomenon_uncertain'
     sdcDS.POSITION_SEADATANET_QC.attrs['sdn_conventions_urn'] = 'SDN:L20::'
-    sdcDS.POSITION_SEADATANET_QC.attrs['coordinates'] = sdcDS.POSITION_SEADATANET_QC.attrs['coordinates'].replace('DEPH','DEPTH')
+    sdcDS.POSITION_SEADATANET_QC.encoding['coordinates'] = 'TIME DEPTH LATITUDE LONGITUDE'
+    sdcDS.POSITION_SEADATANET_QC.encoding['_FillValue']= np.int8(57)
     
     # DEPTH_SEADATANET_QC
     sdcDS.DEPTH_SEADATANET_QC.attrs['long_name'] = 'Depth SeaDataNet Quality Flag'
     sdcDS.DEPTH_SEADATANET_QC.attrs.pop('conventions')
     sdcDS.DEPTH_SEADATANET_QC.attrs['Conventions'] = 'SeaDataNet measurand qualifier flags'
-    sdcDS.DEPTH_SEADATANET_QC.attrs['valid_range'] = np.array([48, 65])        
+    sdcDS.DEPTH_SEADATANET_QC.attrs['valid_range'] = np.array([48, 65]).astype(np.int8)       
     sdcDS.DEPTH_SEADATANET_QC.attrs.pop('valid_min')
     sdcDS.DEPTH_SEADATANET_QC.attrs.pop('valid_max')
     sdcDS.DEPTH_SEADATANET_QC.attrs.pop('comment')
-    sdcDS.DEPTH_SEADATANET_QC.attrs['flag_values'] = np.array([48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65])
+    sdcDS.DEPTH_SEADATANET_QC.attrs['flag_values'] = np.array([48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65]).astype(np.int8) 
     sdcDS.DEPTH_SEADATANET_QC.attrs['flag_meanings'] = 'no_quality_control good_value probably_good_value probably_bad_value bad_value changed_value value_below_detection value_in_excess interpolated_value missing_value value_phenomenon_uncertain'
     sdcDS.DEPTH_SEADATANET_QC.attrs['sdn_conventions_urn'] = 'SDN:L20::'
+    sdcDS.DEPTH_SEADATANET_QC.encoding['_FillValue']= np.int8(57)
     
     # QCflag
     sdcDS.QCflag.attrs['long_name'] = 'Overall Quality Flags'
     sdcDS.QCflag.attrs.pop('conventions')
     sdcDS.QCflag.attrs['Conventions'] = 'SeaDataNet measurand qualifier flags'
-    sdcDS.QCflag.attrs['valid_range'] = np.array([48, 65])        
+    sdcDS.QCflag.attrs['valid_range'] = np.array([48, 65]).astype(np.int8)      
     sdcDS.QCflag.attrs.pop('valid_min')
     sdcDS.QCflag.attrs.pop('valid_max')
     sdcDS.QCflag.attrs.pop('comment')
-    sdcDS.QCflag.attrs['flag_values'] = np.array([48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65])
+    sdcDS.QCflag.attrs['flag_values'] = np.array([48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65]).astype(np.int8) 
     sdcDS.QCflag.attrs['flag_meanings'] = 'no_quality_control good_value probably_good_value probably_bad_value bad_value changed_value value_below_detection value_in_excess interpolated_value missing_value value_phenomenon_uncertain'
     sdcDS.QCflag.attrs['sdn_conventions_urn'] = 'SDN:L20::'
-    sdcDS.QCflag.attrs['coordinates'] = sdcDS.QCflag.attrs['coordinates'].replace('DEPH','DEPTH')
+    sdcDS.QCflag.encoding['coordinates'] = 'TIME DEPTH LATITUDE LONGITUDE'
+    sdcDS.QCflag.encoding['_FillValue']= np.int8(57)
     
     # OWTR_QC
     sdcDS.OWTR_QC.attrs['long_name'] = 'Over-water Quality Flags'
     sdcDS.OWTR_QC.attrs.pop('conventions')
     sdcDS.OWTR_QC.attrs['Conventions'] = 'SeaDataNet measurand qualifier flags'
-    sdcDS.OWTR_QC.attrs['valid_range'] = np.array([48, 65])        
+    sdcDS.OWTR_QC.attrs['valid_range'] = np.array([48, 65]).astype(np.int8)       
     sdcDS.OWTR_QC.attrs.pop('valid_min')
     sdcDS.OWTR_QC.attrs.pop('valid_max')
     sdcDS.OWTR_QC.attrs.pop('comment')
-    sdcDS.OWTR_QC.attrs['flag_values'] = np.array([48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65])
+    sdcDS.OWTR_QC.attrs['flag_values'] = np.array([48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65]).astype(np.int8) 
     sdcDS.OWTR_QC.attrs['flag_meanings'] = 'no_quality_control good_value probably_good_value probably_bad_value bad_value changed_value value_below_detection value_in_excess interpolated_value missing_value value_phenomenon_uncertain'
     sdcDS.OWTR_QC.attrs['sdn_conventions_urn'] = 'SDN:L20::'
-    sdcDS.OWTR_QC.attrs['coordinates'] = sdcDS.OWTR_QC.attrs['coordinates'].replace('DEPH','DEPTH')
+    sdcDS.OWTR_QC.encoding['coordinates'] = 'TIME DEPTH LATITUDE LONGITUDE'
+    sdcDS.OWTR_QC.encoding['_FillValue']= np.int8(57)
     
     # MDFL_QC
     sdcDS.MDFL_QC.attrs['long_name'] = 'Median Filter Quality Flags'
     sdcDS.MDFL_QC.attrs.pop('conventions')
     sdcDS.MDFL_QC.attrs['Conventions'] = 'SeaDataNet measurand qualifier flags'
-    sdcDS.MDFL_QC.attrs['valid_range'] = np.array([48, 65])        
+    sdcDS.MDFL_QC.attrs['valid_range'] = np.array([48, 65]).astype(np.int8)       
     sdcDS.MDFL_QC.attrs.pop('valid_min')
     sdcDS.MDFL_QC.attrs.pop('valid_max')
-    sdcDS.MDFL_QC.attrs['flag_values'] = np.array([48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65])
+    sdcDS.MDFL_QC.attrs['flag_values'] = np.array([48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65]).astype(np.int8) 
     sdcDS.MDFL_QC.attrs['flag_meanings'] = 'no_quality_control good_value probably_good_value probably_bad_value bad_value changed_value value_below_detection value_in_excess interpolated_value missing_value value_phenomenon_uncertain'
     sdcDS.MDFL_QC.attrs['sdn_conventions_urn'] = 'SDN:L20::'
-    sdcDS.MDFL_QC.attrs['coordinates'] = sdcDS.MDFL_QC.attrs['coordinates'].replace('DEPH','DEPTH')
+    sdcDS.MDFL_QC.encoding['coordinates'] = 'TIME DEPTH LATITUDE LONGITUDE'
+    sdcDS.MDFL_QC.encoding['_FillValue']= np.int8(57)
     
     # VART_QC
     sdcDS.VART_QC.attrs['long_name'] = 'Variance Threshold Quality Flags'
     sdcDS.VART_QC.attrs.pop('conventions')
     sdcDS.VART_QC.attrs['Conventions'] = 'SeaDataNet measurand qualifier flags'
-    sdcDS.VART_QC.attrs['valid_range'] = np.array([48, 65])        
+    sdcDS.VART_QC.attrs['valid_range'] = np.array([48, 65]).astype(np.int8)     
     sdcDS.VART_QC.attrs.pop('valid_min')
     sdcDS.VART_QC.attrs.pop('valid_max')
-    sdcDS.VART_QC.attrs['flag_values'] = np.array([48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65])
+    sdcDS.VART_QC.attrs['flag_values'] = np.array([48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65]).astype(np.int8) 
     sdcDS.VART_QC.attrs['flag_meanings'] = 'no_quality_control good_value probably_good_value probably_bad_value bad_value changed_value value_below_detection value_in_excess interpolated_value missing_value value_phenomenon_uncertain'
     sdcDS.VART_QC.attrs['sdn_conventions_urn'] = 'SDN:L20::'
-    sdcDS.VART_QC.attrs['coordinates'] = sdcDS.VART_QC.attrs['coordinates'].replace('DEPH','DEPTH')
+    sdcDS.VART_QC.encoding['coordinates'] = 'TIME DEPTH LATITUDE LONGITUDE'
+    sdcDS.VART_QC.encoding['_FillValue']= np.int8(57)
     
     # CSPD_QC
     sdcDS.CSPD_QC.attrs['long_name'] = 'Velocity Threshold Quality Flags'
     sdcDS.CSPD_QC.attrs.pop('conventions')
     sdcDS.CSPD_QC.attrs['Conventions'] = 'SeaDataNet measurand qualifier flags'
-    sdcDS.CSPD_QC.attrs['valid_range'] = np.array([48, 65])        
+    sdcDS.CSPD_QC.attrs['valid_range'] = np.array([48, 65]).astype(np.int8)     
     sdcDS.CSPD_QC.attrs.pop('valid_min')
     sdcDS.CSPD_QC.attrs.pop('valid_max')
-    sdcDS.CSPD_QC.attrs['flag_values'] = np.array([48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65])
+    sdcDS.CSPD_QC.attrs['flag_values'] = np.array([48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65]).astype(np.int8) 
     sdcDS.CSPD_QC.attrs['flag_meanings'] = 'no_quality_control good_value probably_good_value probably_bad_value bad_value changed_value value_below_detection value_in_excess interpolated_value missing_value value_phenomenon_uncertain'
     sdcDS.CSPD_QC.attrs['sdn_conventions_urn'] = 'SDN:L20::'
-    sdcDS.CSPD_QC.attrs['coordinates'] = sdcDS.CSPD_QC.attrs['coordinates'].replace('DEPH','DEPTH')
+    sdcDS.CSPD_QC.encoding['coordinates'] = 'TIME DEPTH LATITUDE LONGITUDE'
+    sdcDS.CSPD_QC.encoding['_FillValue']= np.int8(57)
     
     # AVRB_QC
     sdcDS.AVRB_QC.attrs['long_name'] = 'Average Radial Bearing Quality Flags'
     sdcDS.AVRB_QC.attrs.pop('conventions')
     sdcDS.AVRB_QC.attrs['Conventions'] = 'SeaDataNet measurand qualifier flags'
-    sdcDS.AVRB_QC.attrs['valid_range'] = np.array([48, 65])        
+    sdcDS.AVRB_QC.attrs['valid_range'] = np.array([48, 65]).astype(np.int8)  
     sdcDS.AVRB_QC.attrs.pop('valid_min')
     sdcDS.AVRB_QC.attrs.pop('valid_max')
-    sdcDS.AVRB_QC.attrs['flag_values'] = np.array([48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65])
+    sdcDS.AVRB_QC.attrs['flag_values'] = np.array([48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65]).astype(np.int8) 
     sdcDS.AVRB_QC.attrs['flag_meanings'] = 'no_quality_control good_value probably_good_value probably_bad_value bad_value changed_value value_below_detection value_in_excess interpolated_value missing_value value_phenomenon_uncertain'
     sdcDS.AVRB_QC.attrs['sdn_conventions_urn'] = 'SDN:L20::'
+    sdcDS.AVRB_QC.encoding['_FillValue']= np.int8(57)
     
     # RDCT_QC
     sdcDS.RDCT_QC.attrs['long_name'] = 'Radial Count Quality Flags'
     sdcDS.RDCT_QC.attrs.pop('conventions')
     sdcDS.RDCT_QC.attrs['Conventions'] = 'SeaDataNet measurand qualifier flags'
-    sdcDS.RDCT_QC.attrs['valid_range'] = np.array([48, 65])        
+    sdcDS.RDCT_QC.attrs['valid_range'] = np.array([48, 65]).astype(np.int8)     
     sdcDS.RDCT_QC.attrs.pop('valid_min')
     sdcDS.RDCT_QC.attrs.pop('valid_max')
-    sdcDS.RDCT_QC.attrs['flag_values'] = np.array([48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65])
+    sdcDS.RDCT_QC.attrs['flag_values'] = np.array([48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65]).astype(np.int8) 
     sdcDS.RDCT_QC.attrs['flag_meanings'] = 'no_quality_control good_value probably_good_value probably_bad_value bad_value changed_value value_below_detection value_in_excess interpolated_value missing_value value_phenomenon_uncertain'
     sdcDS.RDCT_QC.attrs['sdn_conventions_urn'] = 'SDN:L20::'
+    sdcDS.RDCT_QC.encoding['_FillValue']= np.int8(57)
     
+    # Modify global attributes according to the SDC schema
+    sdcDS.attrs.pop('platform_name')
+    sdcDS.attrs.pop('wmo_platform_code')
+    sdcDS.attrs.pop('ices_platform_code')
+    sdcDS.attrs.pop('feature_type')
+    sdcDS.attrs.pop('bottom_depth')
+    sdcDS.attrs.pop('contact')
+    sdcDS.attrs.pop('grid_resolution')
+    sdcDS.attrs.pop('doi')
+    sdcDS.attrs.pop('pi_name')
+    sdcDS.attrs.pop('qc_manual')
+    sdcDS.attrs.pop('wmo_inst_type')
         
     
     
