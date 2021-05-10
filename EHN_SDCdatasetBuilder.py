@@ -39,7 +39,7 @@ def SDCremapvar(remappedVar,remapDict):
                
     # OUTPUTS:
     #     Rerr: error flag.
-    #     remappedVar: remapped data array variabled.
+    #     remappedVar: remapped data array variable.
     
 
     print('[' + datetime.datetime.now().strftime("%d-%b-%Y %H:%M:%S") + '] - - SDCremapvar started.')
@@ -141,7 +141,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     stationID = curStation['station_id'].to_list()[0]    
     
     # Retrieve EDMO code
-    EDMOcode = stationData['EDMO_code'].to_list()[0]
+    EDMOcode = curStation['EDMO_code'].to_list()[0]
     
     # Build site_code (EDIOS_Series_ID) and platform_code (EDIOS_Series_ID-EDIOS_Platform_ID)
     siteCode = networkID
@@ -161,6 +161,19 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     
     # Retrieve manufacturer info
     sensor = sdcDS.attrs['sensor']   
+    
+    # Retrieve time coverage start and time coverage end
+    dtStart = datetime.datetime.utcfromtimestamp(sdcDS.TIME.values[0].astype(int) * 1e-9) - relativedelta(minutes=curStation['temporal_resolution'][0]/2)
+    dtEnd = datetime.datetime.utcfromtimestamp(sdcDS.TIME.values[-1].astype(int) * 1e-9) + relativedelta(minutes=curStation['temporal_resolution'][0]/2)
+    timeCoverageStart = dtStart.isoformat('T','seconds') + 'Z'
+    timeCoverageEnd = dtEnd.isoformat('T','seconds') + 'Z'
+    
+    # Retrieve time coverage duration
+    pdDuration = pd.Timedelta(dtEnd.replace(microsecond=0) - dtStart.replace(microsecond=0))
+    timeCoverageDuration = pdDuration.isoformat()
+        
+    # Set creation date
+    creationDate= datetime.datetime.now().isoformat('T','seconds') + 'Z'
    
     # Remap and rename QC variables to the SDC schema
     # TIME_SEADATANET_QC
@@ -496,7 +509,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     sdcDS.SCDR.attrs.pop('data_mode')
     sdcDS.SCDR.attrs['sdn_parameter_name'] = ''
     sdcDS.SCDR.attrs['sdn_parameter_urn'] = ''
-    sdcDS.SCDR.encoding['_FillValue']= b''
+    sdcDS.SCDR.encoding['_FillValue'] = b''
     
     # SCDT
     sdcDS.SCDT.attrs['long_name'] = 'Transmit Antenna Codes'
@@ -504,7 +517,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     sdcDS.SCDT.attrs.pop('data_mode')
     sdcDS.SCDT.attrs['sdn_parameter_name'] = ''
     sdcDS.SCDT.attrs['sdn_parameter_urn'] = ''
-    sdcDS.SCDT.encoding['_FillValue']= b''
+    sdcDS.SCDT.encoding['_FillValue'] = b''
     
     # TIME_SEADATANET_QC
     sdcDS.TIME_SEADATANET_QC.attrs['long_name'] = 'Time SeaDataNet Quality Flag'
@@ -517,7 +530,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     sdcDS.TIME_SEADATANET_QC.attrs['flag_values'] = np.array([48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65]).astype(np.int8) 
     sdcDS.TIME_SEADATANET_QC.attrs['flag_meanings'] = 'no_quality_control good_value probably_good_value probably_bad_value bad_value changed_value value_below_detection value_in_excess interpolated_value missing_value value_phenomenon_uncertain'
     sdcDS.TIME_SEADATANET_QC.attrs['sdn_conventions_urn'] = 'SDN:L20::'
-    sdcDS.TIME_SEADATANET_QC.encoding['_FillValue']= np.int8(57)
+    sdcDS.TIME_SEADATANET_QC.encoding['_FillValue'] = np.int8(57)
     
     # POSITION_SEADATANET_QC
     sdcDS.POSITION_SEADATANET_QC.attrs['long_name'] = 'Position SeaDataNet Quality Flag'
@@ -531,7 +544,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     sdcDS.POSITION_SEADATANET_QC.attrs['flag_meanings'] = 'no_quality_control good_value probably_good_value probably_bad_value bad_value changed_value value_below_detection value_in_excess interpolated_value missing_value value_phenomenon_uncertain'
     sdcDS.POSITION_SEADATANET_QC.attrs['sdn_conventions_urn'] = 'SDN:L20::'
     sdcDS.POSITION_SEADATANET_QC.encoding['coordinates'] = 'TIME DEPTH LATITUDE LONGITUDE'
-    sdcDS.POSITION_SEADATANET_QC.encoding['_FillValue']= np.int8(57)
+    sdcDS.POSITION_SEADATANET_QC.encoding['_FillValue'] = np.int8(57)
     
     # DEPTH_SEADATANET_QC
     sdcDS.DEPTH_SEADATANET_QC.attrs['long_name'] = 'Depth SeaDataNet Quality Flag'
@@ -544,7 +557,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     sdcDS.DEPTH_SEADATANET_QC.attrs['flag_values'] = np.array([48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65]).astype(np.int8) 
     sdcDS.DEPTH_SEADATANET_QC.attrs['flag_meanings'] = 'no_quality_control good_value probably_good_value probably_bad_value bad_value changed_value value_below_detection value_in_excess interpolated_value missing_value value_phenomenon_uncertain'
     sdcDS.DEPTH_SEADATANET_QC.attrs['sdn_conventions_urn'] = 'SDN:L20::'
-    sdcDS.DEPTH_SEADATANET_QC.encoding['_FillValue']= np.int8(57)
+    sdcDS.DEPTH_SEADATANET_QC.encoding['_FillValue'] = np.int8(57)
     
     # QCflag
     sdcDS.QCflag.attrs['long_name'] = 'Overall Quality Flags'
@@ -558,7 +571,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     sdcDS.QCflag.attrs['flag_meanings'] = 'no_quality_control good_value probably_good_value probably_bad_value bad_value changed_value value_below_detection value_in_excess interpolated_value missing_value value_phenomenon_uncertain'
     sdcDS.QCflag.attrs['sdn_conventions_urn'] = 'SDN:L20::'
     sdcDS.QCflag.encoding['coordinates'] = 'TIME DEPTH LATITUDE LONGITUDE'
-    sdcDS.QCflag.encoding['_FillValue']= np.int8(57)
+    sdcDS.QCflag.encoding['_FillValue'] = np.int8(57)
     
     # OWTR_QC
     sdcDS.OWTR_QC.attrs['long_name'] = 'Over-water Quality Flags'
@@ -572,7 +585,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     sdcDS.OWTR_QC.attrs['flag_meanings'] = 'no_quality_control good_value probably_good_value probably_bad_value bad_value changed_value value_below_detection value_in_excess interpolated_value missing_value value_phenomenon_uncertain'
     sdcDS.OWTR_QC.attrs['sdn_conventions_urn'] = 'SDN:L20::'
     sdcDS.OWTR_QC.encoding['coordinates'] = 'TIME DEPTH LATITUDE LONGITUDE'
-    sdcDS.OWTR_QC.encoding['_FillValue']= np.int8(57)
+    sdcDS.OWTR_QC.encoding['_FillValue'] = np.int8(57)
     
     # MDFL_QC
     sdcDS.MDFL_QC.attrs['long_name'] = 'Median Filter Quality Flags'
@@ -585,7 +598,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     sdcDS.MDFL_QC.attrs['flag_meanings'] = 'no_quality_control good_value probably_good_value probably_bad_value bad_value changed_value value_below_detection value_in_excess interpolated_value missing_value value_phenomenon_uncertain'
     sdcDS.MDFL_QC.attrs['sdn_conventions_urn'] = 'SDN:L20::'
     sdcDS.MDFL_QC.encoding['coordinates'] = 'TIME DEPTH LATITUDE LONGITUDE'
-    sdcDS.MDFL_QC.encoding['_FillValue']= np.int8(57)
+    sdcDS.MDFL_QC.encoding['_FillValue'] = np.int8(57)
     
     # VART_QC
     sdcDS.VART_QC.attrs['long_name'] = 'Variance Threshold Quality Flags'
@@ -598,7 +611,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     sdcDS.VART_QC.attrs['flag_meanings'] = 'no_quality_control good_value probably_good_value probably_bad_value bad_value changed_value value_below_detection value_in_excess interpolated_value missing_value value_phenomenon_uncertain'
     sdcDS.VART_QC.attrs['sdn_conventions_urn'] = 'SDN:L20::'
     sdcDS.VART_QC.encoding['coordinates'] = 'TIME DEPTH LATITUDE LONGITUDE'
-    sdcDS.VART_QC.encoding['_FillValue']= np.int8(57)
+    sdcDS.VART_QC.encoding['_FillValue'] = np.int8(57)
     
     # CSPD_QC
     sdcDS.CSPD_QC.attrs['long_name'] = 'Velocity Threshold Quality Flags'
@@ -611,7 +624,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     sdcDS.CSPD_QC.attrs['flag_meanings'] = 'no_quality_control good_value probably_good_value probably_bad_value bad_value changed_value value_below_detection value_in_excess interpolated_value missing_value value_phenomenon_uncertain'
     sdcDS.CSPD_QC.attrs['sdn_conventions_urn'] = 'SDN:L20::'
     sdcDS.CSPD_QC.encoding['coordinates'] = 'TIME DEPTH LATITUDE LONGITUDE'
-    sdcDS.CSPD_QC.encoding['_FillValue']= np.int8(57)
+    sdcDS.CSPD_QC.encoding['_FillValue'] = np.int8(57)
     
     # AVRB_QC
     sdcDS.AVRB_QC.attrs['long_name'] = 'Average Radial Bearing Quality Flags'
@@ -623,7 +636,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     sdcDS.AVRB_QC.attrs['flag_values'] = np.array([48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65]).astype(np.int8) 
     sdcDS.AVRB_QC.attrs['flag_meanings'] = 'no_quality_control good_value probably_good_value probably_bad_value bad_value changed_value value_below_detection value_in_excess interpolated_value missing_value value_phenomenon_uncertain'
     sdcDS.AVRB_QC.attrs['sdn_conventions_urn'] = 'SDN:L20::'
-    sdcDS.AVRB_QC.encoding['_FillValue']= np.int8(57)
+    sdcDS.AVRB_QC.encoding['_FillValue'] = np.int8(57)
     
     # RDCT_QC
     sdcDS.RDCT_QC.attrs['long_name'] = 'Radial Count Quality Flags'
@@ -635,7 +648,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     sdcDS.RDCT_QC.attrs['flag_values'] = np.array([48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65]).astype(np.int8) 
     sdcDS.RDCT_QC.attrs['flag_meanings'] = 'no_quality_control good_value probably_good_value probably_bad_value bad_value changed_value value_below_detection value_in_excess interpolated_value missing_value value_phenomenon_uncertain'
     sdcDS.RDCT_QC.attrs['sdn_conventions_urn'] = 'SDN:L20::'
-    sdcDS.RDCT_QC.encoding['_FillValue']= np.int8(57)
+    sdcDS.RDCT_QC.encoding['_FillValue'] = np.int8(57)
     
     # Modify global attributes according to the SDC schema
     sdcDS.attrs.pop('platform_name')
@@ -649,11 +662,37 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     sdcDS.attrs.pop('pi_name')
     sdcDS.attrs.pop('qc_manual')
     sdcDS.attrs.pop('wmo_inst_type')
-        
+    sdcDS.attrs['id'] = dataID
+    sdcDS.attrs['time_coverage_start'] = timeCoverageStart
+    sdcDS.attrs['time_coverage_end'] = timeCoverageEnd
+    sdcDS.attrs['time_coverage_duration'] = timeCoverageDuration
+    sdcDS.attrs['format_version'] = 'v2.2'
+    sdcDS.attrs['Conventions'] = 'CF-1.6, OceanSITES Manual 1.2, SeaDataNet_1.0, INSPIRE'
+    sdcDS.attrs['citation'] = sdcDS.attrs['citation'].replace('Copernicus','SeaDataNet')
+    sdcDS.attrs['distribution_statement'] = sdcDS.attrs['distribution_statement'].replace('Copernicus','SeaDataNet')
+    sdcDS.attrs['naming_authority'] = 'eu.eurogoos'
+    sdcDS.attrs['cdm_data_type'] = 'Grid'
+    sdcDS.attrs['netcdf_version'] = '4.3.3.1'
+    sdcDS.attrs['software_name'] = 'EHN_SDCdatasetBuilder'        
+    sdcDS.attrs['software_version'] = 'v2.2'
+    sdcDS.attrs['references'] = 'Corgnati, L. et al (2019) SeaDataNet data management protocols for HF Radar data, WP9 - Deliverable D9.12. Version 1.6. SeaDataNet, 83pp. DOI: http://dx.doi.org/10.25607/OBP-1011'
+    sdcDS.attrs['date_created'] = creationDate
+    sdcDS.attrs['date_modified'] = creationDate
+    sdcDS.attrs['date_update'] = creationDate
+    sdcDS.attrs['date_issued'] = creationDate
+    sdcDS.attrs['metadata_date_stamp'] = creationDate
+    sdcDS.attrs['history'] = 'Data collected from ' + timeCoverageStart + ' to ' + timeCoverageEnd + '.NetCDF file created by the European HFR Node on ' + creationDate + '.'
     
+    # Build aggregated netCDF file name
+    ncFilePath = curStation['SDC_folder_path'][0]
+    ncFileNoPath = dataID + '.nc'
+    ncFile = ncFilePath + os.path.sep + ncFileNoPath
     
+    # Save the aggregated netDFC file
+    sdcDS.to_netcdf(ncFile,format='NETCDF4_CLASSIC')
     
-    
+    # Get info on the saved netCDF file
+    ncFilesize = os.path.getsize(ncFile) 
     
     if(not Rerr):
         print('[' + datetime.datetime.now().strftime("%d-%b-%Y %H:%M:%S") + '] - - SDCradialNCaggregation_v22 successfully executed.')
