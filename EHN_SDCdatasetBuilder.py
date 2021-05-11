@@ -47,8 +47,15 @@ def SDCremapvar(remappedVar,remapDict):
     # Initialize error flag
     Rerr = False
     
+    # Store the encoding dictionary
+    encDict = remappedVar.encoding
+    
+    # Remap
     for k,v in remapDict.items():
         remappedVar = remappedVar.where(remappedVar!=k, v)
+        
+    # Assign the encoding dictionary to the remapped variable
+    remappedVar.encoding = encDict
         
     if(not Rerr):
         print('[' + datetime.datetime.now().strftime("%d-%b-%Y %H:%M:%S") + '] - - SDCremapvar successfully executed for variable ' + remappedVar.name + '.')
@@ -148,7 +155,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     platformCode = networkID + '-' + stationID
     
     # Build data ID for SDN_LOCAL_CDI_ID variable
-    dataID = 'RV_' + platformCode + '_' + timeExtent
+    dataID = 'RV_HF_' + platformCode + '_' + timeExtent
     
     # Build SDN_XLINK string
     xlinkString = '<sdn_reference xlink:href="http://seadatanet.maris2.nl/v_cdi_v3/print_xml.asp?edmo=134&identifier="' + dataID + '" xlink:role="isDescribedBy" xlink:type="SDN:L23::CDI"/>'
@@ -228,6 +235,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     
     # DEPTH
     sdcDS = sdcDS.rename({'DEPH': 'DEPTH'})
+    sdcDS.DEPTH.attrs['ancillary_variables'] = 'DEPTH_SEADATANET_QC'
     sdcDS.DEPTH.attrs.pop('valid_min')
     sdcDS.DEPTH.attrs.pop('valid_max')
     sdcDS.DEPTH.attrs.pop('uncertainty')
@@ -533,7 +541,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     sdcDS.TIME_SEADATANET_QC.encoding['_FillValue'] = np.int8(57)
     
     # POSITION_SEADATANET_QC
-    sdcDS.POSITION_SEADATANET_QC.attrs['long_name'] = 'Position SeaDataNet Quality Flag'
+    sdcDS.POSITION_SEADATANET_QC.attrs['long_name'] = 'Position SeaDataNet Quality Flags'
     sdcDS.POSITION_SEADATANET_QC.attrs.pop('conventions')
     sdcDS.POSITION_SEADATANET_QC.attrs['Conventions'] = 'SeaDataNet measurand qualifier flags'
     sdcDS.POSITION_SEADATANET_QC.attrs['valid_range'] = np.array([48, 65]).astype(np.int8)       
@@ -673,7 +681,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     sdcDS.attrs['naming_authority'] = 'eu.eurogoos'
     sdcDS.attrs['cdm_data_type'] = 'Grid'
     sdcDS.attrs['netcdf_version'] = '4.3.3.1'
-    sdcDS.attrs['software_name'] = 'EHN_SDCdatasetBuilder'        
+    sdcDS.attrs['software_name'] = 'EU_HFR_NODE_pySDC'        
     sdcDS.attrs['software_version'] = 'v2.2'
     sdcDS.attrs['references'] = 'Corgnati, L. et al (2019) SeaDataNet data management protocols for HF Radar data, WP9 - Deliverable D9.12. Version 1.6. SeaDataNet, 83pp. DOI: http://dx.doi.org/10.25607/OBP-1011'
     sdcDS.attrs['date_created'] = creationDate
@@ -692,7 +700,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     sdcDS.to_netcdf(ncFile,format='NETCDF4_CLASSIC')
     
     # Get info on the saved netCDF file
-    ncFilesize = os.path.getsize(ncFile) 
+    ncFilesize = os.path.getsize(ncFile) / 1024
     
     if(not Rerr):
         print('[' + datetime.datetime.now().strftime("%d-%b-%Y %H:%M:%S") + '] - - SDCradialNCaggregation_v22 successfully executed.')
