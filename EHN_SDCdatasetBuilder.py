@@ -271,16 +271,19 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     sdcDS = sdcDS.drop(['SDN_CRUISE'])
     sdcDS = sdcDS.assign(SDN_CRUISE=siteCode)
     sdcDS.SDN_CRUISE.attrs['long_name'] = 'Grid grouping label'
+    sdcDS.SDN_CRUISE.encoding['char_dim_name'] = 'STRING' + str(len(siteCode))
     
     # SDN_STATION
     sdcDS = sdcDS.drop(['SDN_STATION'])
     sdcDS = sdcDS.assign(SDN_STATION=platformCode)
     sdcDS.SDN_STATION.attrs['long_name'] = 'Grid label'
+    sdcDS.SDN_STATION.encoding['char_dim_name'] = 'STRING' + str(len(platformCode))
     
     # SDN_LOCAL_CDI_ID
     sdcDS = sdcDS.drop(['SDN_LOCAL_CDI_ID'])
     sdcDS = sdcDS.assign(SDN_LOCAL_CDI_ID=dataID)
     sdcDS.SDN_LOCAL_CDI_ID.attrs['long_name'] = 'SeaDataNet CDI identifier'
+    sdcDS.SDN_LOCAL_CDI_ID.encoding['char_dim_name'] = 'STRING' + str(len(dataID))
     
     # SDN_EDMO_CODE
     sdcDS = sdcDS.drop(['SDN_EDMO_CODE'])
@@ -294,6 +297,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     sdcDS = sdcDS.assign(SDN_XLINK=xlinkString)
     sdcDS['SDN_XLINK'] = sdcDS.SDN_XLINK.expand_dims('REFMAX')
     sdcDS.SDN_XLINK.attrs['long_name'] = 'External resource linkages'
+    sdcDS.SDN_XLINK.encoding['char_dim_name'] = 'STRING' + str(len(xlinkString))
     
     # SDN_REFERENCES
     sdcDS = sdcDS.drop(['SDN_REFERENCES'])
@@ -526,6 +530,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     sdcDS.SCDR.attrs['sdn_parameter_name'] = ''
     sdcDS.SCDR.attrs['sdn_parameter_urn'] = ''
     sdcDS.SCDR.encoding['_FillValue'] = b''
+    sdcDS.SCDR.encoding['char_dim_name'] = 'STRING' + str(len(sdcDS.SCDR.values[0][0]))
     
     # SCDT
     sdcDS.SCDT.attrs['long_name'] = 'Transmit Antenna Codes'
@@ -534,6 +539,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     sdcDS.SCDT.attrs['sdn_parameter_name'] = ''
     sdcDS.SCDT.attrs['sdn_parameter_urn'] = ''
     sdcDS.SCDT.encoding['_FillValue'] = b''
+    sdcDS.SCDT.encoding['char_dim_name'] = 'STRING' + str(len(sdcDS.SCDT.values[0][0]))
     
     # TIME_SEADATANET_QC
     sdcDS.TIME_SEADATANET_QC.attrs['long_name'] = 'Time SeaDataNet Quality Flag'
