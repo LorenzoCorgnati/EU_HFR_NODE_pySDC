@@ -215,6 +215,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     sdcDS.TIME.attrs.pop('valid_min')
     sdcDS.TIME.attrs.pop('valid_max')
     sdcDS.TIME.attrs.pop('uncertainty')
+    sdcDS.TIME.encoding['_FillValue'] = None
     
     if 'codar'.casefold() in sensor.casefold():
         # BEAR
@@ -224,6 +225,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
         sdcDS.BEAR.attrs.pop('valid_min')
         sdcDS.BEAR.attrs.pop('valid_max')
         sdcDS.BEAR.attrs.pop('uncertainty')
+        sdcDS.BEAR.encoding['_FillValue'] = None
         
         # RNGE
         sdcDS.RNGE.attrs['units'] = 'km'
@@ -232,6 +234,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
         sdcDS.RNGE.attrs.pop('valid_min')
         sdcDS.RNGE.attrs.pop('valid_max')
         sdcDS.RNGE.attrs.pop('uncertainty')
+        sdcDS.RNGE.encoding['_FillValue'] = None
     
     # DEPTH
     sdcDS = sdcDS.rename({'DEPH': 'DEPTH'})
@@ -240,6 +243,7 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     sdcDS.DEPTH.attrs.pop('valid_max')
     sdcDS.DEPTH.attrs.pop('uncertainty')
     sdcDS.DEPTH.attrs.pop('data_mode')
+    sdcDS.DEPTH.encoding['_FillValue'] = None
     
     # LATITUDE
     sdcDS.LATITUDE.attrs['long_name'] = 'Latitude'
@@ -249,6 +253,8 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     sdcDS.LATITUDE.attrs.pop('valid_min')
     sdcDS.LATITUDE.attrs.pop('valid_max')
     sdcDS.LATITUDE.attrs.pop('uncertainty')
+    if 'wera'.casefold() in sensor.casefold():
+        sdcDS.LATITUDE.encoding['_FillValue'] = None
     
     # LONGITUDE
     sdcDS.LONGITUDE.attrs['long_name'] = 'Longitude'
@@ -258,6 +264,8 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     sdcDS.LONGITUDE.attrs.pop('valid_min')
     sdcDS.LONGITUDE.attrs.pop('valid_max')
     sdcDS.LONGITUDE.attrs.pop('uncertainty')
+    if 'wera'.casefold() in sensor.casefold():
+        sdcDS.LONGITUDE.encoding['_FillValue'] = None
     
     # SDN_CRUISE
     sdcDS = sdcDS.drop(['SDN_CRUISE'])
