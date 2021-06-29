@@ -22,6 +22,7 @@ import datetime
 from dateutil.relativedelta import relativedelta
 import pandas as pd
 import xarray as xr
+import netCDF4 as nc4
 #import LatLon
 
 
@@ -712,6 +713,11 @@ def SDCradialNCaggregation_v22(curNetwork, curStation):
     
     # Save the aggregated netDFC file
     sdcDS.to_netcdf(ncFile,format='NETCDF4_CLASSIC')
+    
+    # Modify the units attribute of TIME variable for including timezone digit
+    f = nc4.Dataset(ncFile,'r+',format='NETCDF4')
+    f.variables['TIME'].units = f.variables['TIME'].units.replace('+00:00','Z')
+    f.close()
     
     # Get info on the saved netCDF file
     ncFilesize = os.path.getsize(ncFile) / 1024
